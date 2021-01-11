@@ -1,0 +1,13 @@
+<ul class="tags">
+        {% load templates_filters %}
+{% for tag in all_tags %}
+                    <li class="tags__item">
+                        <a
+                            id="{{ tags.slug }}"
+                            class="tags__checkbox tags__checkbox_style_{{ tag.color }}
+                            {% if tag.slug in request.GET|get_filter_values %} tags__checkbox_active {% endif %}"
+                            href="{% url 'index' %}?{{ request|get_filter_link:tag }}"></a>
+                        <span class="tags__label">{{ tag.name }}</span>
+                    </li>
+                {% endfor %}
+</ul>

@@ -1,0 +1,33 @@
+{% load user_filters %}
+
+{% load templates_filters %}
+    <div class="card" data-id="{{recipe.id}}">
+        <a href="{% url 'view_recipe' recipe.author.username recipe.id %}" class="link" target="_blank"><img src="{{ recipe.image.url }}" alt="Какой-то текст" class="card__image"></a>
+        <div class="card__body">
+            <a class="card__title link" href="" target="_blank">{{ recipe.title }}</a>
+            {% if recipe.tags %}
+            <ul class="card__items">
+                {% for tag in recipe.tags.all %}
+                <li class="card__item"><span class="badge badge_style_{{ tag.color }}">{{ tag.name }}</span></li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            <div class="card__items card__items_column">
+                <p class="card__text"><span class="icon-time"></span> {{ recipe.cooking_time }} мин.</p>
+                <p class="card__text"><span class="icon-user"></span> <a href="{% url 'profile' recipe.author.username %}" style="color: black"> {{ recipe.author.get_full_name}}</a></p>
+            </div>
+        </div>
+        <div class="card__footer">
+
+{% include 'buy_button.html' %}
+
+{% if user.is_authenticated %}
+    {% if recipe|is_favorite:user %}
+        <button class="button button_style_none" name="favorites"><span class="icon-favorite icon-favorite_active"></span></button>
+    {% else %}
+        <button class="button button_style_none" name="favorites" data-out><span class="icon-favorite"></span></button>
+    {% endif %}
+{% endif %}
+
+        </div>
+    </div>

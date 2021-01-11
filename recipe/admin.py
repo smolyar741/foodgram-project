@@ -1,46 +1,35 @@
 from django.contrib import admin
 
-from .models import Tag, Ingredient, Recipe, Amount, FollowUser, FollowRecipe, ShopList
+from .models import Tag, Ingredients, Recipe, RecipeIngredient, FollowUser, FollowRecipe, ShopList
 
 
-class AmountInLine(admin.TabularInline):
-    model = Amount
+class RecipeIngredientInLine(admin.TabularInline):
+    model = RecipeIngredient
     extra = 1
 
 
 class TagInLine(admin.TabularInline):
-    model = Tag 
-    extra = 1 
+    model = Tag
+    extra = 1
 
 
 class TagAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name', 'slug')
-    empty_value_display = '-пусто-'
+    list_display = ('name', 'slug')
 
 
-class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'title', 'dimension')
-    search_fields = ('title',)
+class IngredientsAdmin(admin.ModelAdmin):
+    list_display = ('title', 'dimension')
     list_filter = ('title',)
-    empty_value_display = '-пусто-'
 
 
 class RecipeAdmin(admin.ModelAdmin):
-    def follow_recipe_count(self, obj):
-        return FollowRecipe.objects.filter(recipe=obj).count()
-
-    follow_recipe_count.short_description = 'Краткое описание'
-
-    list_display = ('pk', 'title', 'author', 'pub_date', 'follow_recipe_count')
-    search_fields = ('title',)
-    list_filter = ('pub_date',)
-    inlines = (AmountInLine,)
-    readonly_fields = ('follow_recipe_count',)
+    list_display = ('title', 'author')
+    list_filter = ('author', 'title')
+    inlines = (RecipeIngredientInLine,)
 
 
-class AmountAdmin(admin.ModelAdmin):
-    fields = ('ingredient', 'recipe', 'units')
-    search_fields = ('ingredient', 'recipe')
+class RecipeIngredientAdmin(admin.ModelAdmin):
+    list_display = ('ingredient', 'recipe', 'amount')
 
 
 class FollowUserAdmin(admin.ModelAdmin):
@@ -59,9 +48,9 @@ class ShopListAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Tag, TagAdmin)
-admin.site.register(Ingredient, IngredientAdmin)
+admin.site.register(Ingredients, IngredientsAdmin)
 admin.site.register(Recipe, RecipeAdmin)
-admin.site.register(Amount, AmountAdmin)
+admin.site.register(RecipeIngredient, RecipeIngredientAdmin)
 admin.site.register(FollowUser, FollowUserAdmin)
 admin.site.register(FollowRecipe, FollowRecipeAdmin)
 admin.site.register(ShopList, ShopListAdmin)
