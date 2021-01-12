@@ -73,6 +73,3 @@ docker stop $(docker ps -a -q)
 docker rm $(docker ps -a -q)
 
 
-
-![Foodgram workflow](https://github.com/smolyar741/foodgram-project/workflows/foodgram_workflow/badge.svg)
-![Foodgram workflow](https://github.com/smolyar741/foodgram-project/workflows/foodgram_workflow/badge.svg)
