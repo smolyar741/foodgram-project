@@ -1,0 +1,13 @@
+.vscode/
+nginx/
+venv/
+.env
+.gitignore
+.git
+docker-compose.yaml
+README.md
+.github
+db.sqlite3
+/static
+media/
+temp/

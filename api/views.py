@@ -1,95 +1,74 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from django.views import View
-from rest_framework.utils import json
+from django.contrib.auth import get_user_model
+from recipe.models import (FollowRecipe, FollowUser, Ingredients, Recipe,
+                           ShopList)
+from rest_framework.decorators import api_view
+from rest_framework.filters import SearchFilter
+from rest_framework.generics import get_object_or_404
+from rest_framework.mixins import ListModelMixin
+from rest_framework.response import Response
+from rest_framework.status import HTTP_201_CREATED
+from rest_framework.viewsets import GenericViewSet
 
-from recipe.models import Recipe, FollowRecipe, Ingredients, FollowUser, ShopList
+from .serializers import (FollowRecipeSerializer, FollowUserSerializer,
+                          IngredientsSerializer, PurchaseSerializer)
 
-
-class Favorites(LoginRequiredMixin, View):
-    '''Добавление и удаление рецепта из Избранное'''
-
-    def post(self, request):
-        req_ = json.loads(request.body)
-        recipe_id = req_.get('id', None)
-        if recipe_id:
-            recipe = get_object_or_404(Recipe, id=recipe_id)
-            obj, created = FollowRecipe.objects.get_or_create(
-                user=request.user, recipe=recipe)
-            if created:
-                return JsonResponse({'success': True})
-            return JsonResponse({'success': False})
-        return JsonResponse({'success': False}, status=400)
-
-    def delete(self, request, recipe_id):
-        recipe = get_object_or_404(
-            FollowRecipe,
-            recipe=recipe_id,
-            user=request.user)
-        recipe.delete()
-        return JsonResponse({'success': True})
+User = get_user_model()
 
 
-class Purchases(LoginRequiredMixin, View):
-
-    def post(self, request):
-        recipe_id = json.loads(request.body)['id']
-        recipe = get_object_or_404(Recipe, id=recipe_id)
-        ShopList.objects.get_or_create(user=request.user, recipe=recipe)
-        return JsonResponse({'success': True})
-
-    def delete(self, request, recipe_id):
-        recipe = get_object_or_404(Recipe, id=recipe_id)
-        user = get_object_or_404(User, username=request.user.username)
-        obj = get_object_or_404(ShopList, user=user, recipe=recipe)
-        obj.delete()
-        return JsonResponse({'success': True})
+class IngredientsListView(ListModelMixin, GenericViewSet):
+    queryset = Ingredients.objects.all()
+    serializer_class = IngredientsSerializer
+    filter_backends = [SearchFilter, ]
+    search_fields = ['title', ]
+    ordering_fields = ['title', ]
 
 
-class Subscribe(LoginRequiredMixin, View):
+@api_view(['POST', 'DELETE'])
+def api_purchase(request, recipe_id):
+    recipe = get_object_or_404(Recipe, pk=recipe_id)
 
-    def post(self, request):
-        req_ = json.loads(request.body)
-        author_id = req_.get('id', None)
-        if author_id is not None:
-            author = get_object_or_404(User, id=author_id)
-            obj, created = FollowUser.objects.get_or_created(
-                user=request.user, author=author)
-            if created:
-                return JsonResponse({'success': True})
-            return JsonResponse({'success': False})
-        return JsonResponse({'success': False}, status=400)
-
-    def delete(self, request, author_id):
-        user = get_object_or_404(User, username=request.user.username)
-        author = get_object_or_404(User, id=author_id)
-        obj = get_object_or_404(FollowUser, user=user, author=author)
-        obj.delete()
-        return JsonResponse({'success': True})
+    if request.method == 'POST':
+        serializer = PurchaseSerializer(data=request.data, context={
+            'request_user': request.user,
+            'request_recipe': recipe})
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=request.user, recipe=recipe)
+        return Response({'success': True}, status=HTTP_201_CREATED)
+    
+    if request.method == 'DELETE':
+        get_object_or_404(ShopList, user=request.user, recipe=recipe).delete()
+        return Response({'success': True})
 
 
-class Purchase(LoginRequiredMixin, View):
+@api_view(['POST', 'DELETE'])
+def api_follow_recipe(request, recipe_id):
+    recipe = get_object_or_404(Recipe, pk=recipe_id)
 
-    def post(self, request):
-        recipe_id = json.loads(request.body)['id']
-        recipe = get_object_or_404(Recipe, id=recipe_id)
-        ShopList.objects.get_or_create(user=request.user, recipe=recipe)
-        return JsonResponse({'success': True})
+    if request.method == 'POST':
+        serializer = FollowRecipeSerializer(data=request.data, context={
+            'request_user': request.user,
+            'request_recipe': recipe})
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=request.user, recipe=recipe)
+        return Response({'success': True}, status=HTTP_201_CREATED)
+    
+    if request.method == 'DELETE':
+        get_object_or_404(FollowRecipe, user=request.user, recipe=recipe).delete()
+        return Response({'success': True})
 
-    def delete(self, request, recipe_id):
-        recipe = get_object_or_404(Recipe, id=recipe_id)
-        user = get_object_or_404(User, username=request.user.username)
-        obj = get_object_or_404(ShopList, user=user, recipe=recipe)
-        obj.delete()
-        return JsonResponse({'success': True})
 
+@api_view(['POST', 'DELETE'])
+def api_follow_user(request, author_id):
+    author = get_object_or_404(User, pk=author_id)
 
-class Ingredient(LoginRequiredMixin, View):
-
-    def get(self, request):
-        text = request.GET['query']
-        ingredients = list(Ingredients.objects.filter(
-            title__icontains=text).values('title', 'dimension'))
-        return JsonResponse(ingredients, safe=False)
+    if request.method == 'POST':
+        serializer = FollowUserSerializer(data=request.data, context={
+            'request_user': request.user,
+            'request_author': author})
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=request.user, recipe=recipe)
+        return Response({'success': True}, status=HTTP_201_CREATED)
+    
+    if request.method == 'DELETE':
+        get_object_or_404(FollowUser, user=request.user, author=author).delete()
+        return Response({'success': True})
