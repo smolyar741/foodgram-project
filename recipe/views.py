@@ -1,12 +1,12 @@
 from django.contrib.auth.models import User
+from django.core.paginator import Paginator
 from django.db.models import Sum
 from django.http import HttpResponse
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import get_object_or_404, redirect, render
 
 from recipe.forms import RecipeForm
-from recipe.models import Recipe, Ingredients, FollowUser, ShopList, RecipeIngredient
-from django.core.paginator import Paginator
-
+from recipe.models import (FollowUser, Ingredients, Recipe, RecipeIngredient,
+                           ShopList)
 from recipe.utils import get_ingredients
 
 
@@ -18,7 +18,7 @@ def index(request):
         recipe_list = recipe_list.filter(
             tags__slug__in=tags_slug).distinct().all()
 
-    paginator = Paginator(recipe_list, 10)
+    paginator = Paginator(recipe_list, 8)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
 
@@ -60,41 +60,45 @@ def profile(request, username):
 
 def new_recipe(request):
     user = User.objects.get(username=request.user)
+    form = RecipeForm(request.POST or None, files=request.FILES or None)
+
     if request.method == 'POST':
-        form = RecipeForm(request.POST or None, files=request.FILES or None)
         ingredients = get_ingredients(request)
+
         if not ingredients:
             form.add_error(None, 'Добавьте ингредиент')
+
         elif form.is_valid():
             recipe = form.save(commit=False)
             recipe.author = user
             recipe.save()
+
         for item in ingredients:
             RecipeIngredient.objects.create(
                 units=ingredients[item],
                 ingredient=Ingredients.objects.get(
-                    title=f'{item}'),
+                    title=item),
                 recipe=recipe)
 
             form.save_m2m()  # вызывается для сохранения данных, связынных через многи ко многим
             return redirect('index')
     else:
-        form = RecipeForm()
     return render(request, 'new_recipe.html', {'form': form})
 
 
 def recipe_edit(request, recipe_id):
     recipe = get_object_or_404(Recipe, id=recipe_id)
+    form = RecipeForm(
+        request.POST or None,
+        files=request.FILES or None,
+        instance=recipe)
 
     if request.user != recipe.author:
         return redirect('index')
 
     if request.method == 'POST':
-        form = RecipeForm(
-            request.POST or None,
-            files=request.FILES or None,
-            instance=recipe)
         ingredients = get_ingredients(request)
+
         if form.is_valid():
             RecipeIngredient.objects.filter(recipe=recipe).delete()
             recipe = form.save(commit=False)
@@ -105,11 +109,12 @@ def recipe_edit(request, recipe_id):
                 RecipeIngredient.objects.create(
                     units=ingredients[item],
                     ingredient=Ingredients.objects.get(
-                        title=f'{item}'),
+                        title=item),
                     recipe=recipe)
 
             form.save_m2m()  # вызывается для сохранения данных, связынных через многи ко многим
             return redirect('index')
+            
     return render(request, "edit_recipe.html",
                   {'form': form, 'recipe': recipe})
 
