@@ -82,7 +82,6 @@ def new_recipe(request):
 
             form.save_m2m()  # вызывается для сохранения данных, связынных через многи ко многим
             return redirect('index')
-    else:
     return render(request, 'new_recipe.html', {'form': form})
 
 
@@ -136,7 +135,7 @@ def recipe_view(request, recipe_id, username):
 
 def favorite(request):
     tag = request.GET.getlist('filters')
-    recipe_list = Recipe.ojects.filter(
+    recipe_list = Recipe.objects.filter(
         follow_recipe__user__id=request.user.id).all()
     if tag:
         recipe_list = recipe_list.filter(tag__slug__in=tag).distinct()
@@ -160,7 +159,7 @@ def follow(request):
 
 def shop_list(request):
     shop_list = ShopList.objects.filter(user=request.user).all()
-    return render(request, 'shoplist.html', {'shop_list': shop_list})
+    return render(request, 'shop_list.html', {'shop_list': shop_list})
 
 
 def download_list(request):
