@@ -72,4 +72,3 @@ docker-compose down
 ```
 docker stop $(docker ps -a -q)
 docker rm $(docker ps -a -q)
->>>>>>> cc2f3236586dfc558d7e4d822fca06c284882310
