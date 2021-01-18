@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-=======
+
 ![foodgram_workflow Action Status](https://github.com/smolyar741/foodgram-project/workflows/foodgram_workflow/badge.svg)
 
 ## "Продуктовый помощник Foodgram"
