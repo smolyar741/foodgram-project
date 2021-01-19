@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-=======
+
 ![foodgram_workflow Action Status](https://github.com/smolyar741/foodgram-project/workflows/foodgram_workflow/badge.svg)
 
 ## "Продуктовый помощник Foodgram"
@@ -73,4 +72,3 @@ docker-compose down
 ```
 docker stop $(docker ps -a -q)
 docker rm $(docker ps -a -q)
->>>>>>> cc2f3236586dfc558d7e4d822fca06c284882310
