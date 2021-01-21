@@ -18,13 +18,12 @@ def index(request):
         recipe_list = recipe_list.filter(
             tags__slug__in=tags_slug).distinct().all()
 
-    paginator = Paginator(recipe_list, 8)
+    paginator = Paginator(recipe_list, 6)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
 
-    return render(
-        request, 'index.html', {
-            'page': page, 'paginator': paginator, })
+    return render(request, 'index.html',
+                  {'page': page, 'paginator': paginator, })
 
 
 def profile(request, username):
@@ -60,28 +59,27 @@ def profile(request, username):
 
 def new_recipe(request):
     user = User.objects.get(username=request.user)
-    form = RecipeForm(request.POST or None, files=request.FILES or None)
-
     if request.method == 'POST':
+        form = RecipeForm(request.POST or None, files=request.FILES or None)
         ingredients = get_ingredients(request)
-
         if not ingredients:
-            form.add_error(None, 'Добавьте ингредиент')
-
+            form.add_error(None, 'Добавьте ингредиенты')
         elif form.is_valid():
             recipe = form.save(commit=False)
             recipe.author = user
             recipe.save()
-
-        for item in ingredients:
-            RecipeIngredient.objects.create(
-                units=ingredients[item],
-                ingredient=Ingredients.objects.get(
-                    title=item),
-                recipe=recipe)
-
-            form.save_m2m()  # вызывается для сохранения данных, связынных через многи ко многим
+            for ing_name, amount in ingredients.items():
+                ingredient = get_object_or_404(Ingredients, title=ing_name)
+                recipe_ing = RecipeIngredient(
+                    recipe=recipe,
+                    ingredient=ingredient,
+                    amount=amount
+                )
+                recipe_ing.save()
+            form.save_m2m()
             return redirect('index')
+    else:
+        form = RecipeForm()
     return render(request, 'new_recipe.html', {'form': form})
 
 

@@ -32,8 +32,9 @@
                 {% include 'recipe.html' %}
             {% endfor %}
     </div>
-    {% include 'paginator.html' %}
-    </main>
+    {% if page.has_other_pages %}
+        {% include 'paginator.html' with items=page paginator=paginator%}
+    {% endif %}
 
     <script src="{% static 'js/config/config.js' %}"></script>
     {% if user.is_authenticated %}

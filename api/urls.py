@@ -1,16 +1,14 @@
 from django.urls import path
-from rest_framework.routers import DefaultRouter
+from . import views
 
-from .views import (IngredientsListView, api_follow_recipe, api_follow_user,
-                    api_purchase)
-
-router = DefaultRouter()
-router.register(r'ingredients', IngredientsListView)
 
 urlpatterns = [
-    path('<int:recipe_id>/purchases/', api_purchase),
-    path('<int:recipe_id>/favorites/', api_follow_recipe),
-    path('<int:author_id>/subscriptions/', api_follow_user)
-]
+    path("ingredients/", views.Ingredient.as_view()),
+    path("favorites/", views.Favorites.as_view()),
+    path("favorites/<int:recipe_id>", views.Favorites.as_view()),
+    path("subscriptions/", views.Subscribe.as_view()),
+    path("subscriptions/<int:author_id>", views.Subscribe.as_view()),
+    path("purchases/", views.Purchase.as_view()),
+    path("purchases/<int:recipe_id>", views.Purchase.as_view()),
 
-urlpatterns += router.urls 
+]

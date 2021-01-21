@@ -29,8 +29,9 @@
         {% endfor %}
 
         </ul>
+        {% if page.has_other_pages %}
         <a href="{% url 'download_list' %}"><button class="button button_style_blue">Скачать список</button></a>
-
+        {% endif %}
 
     </div>
 </main>
