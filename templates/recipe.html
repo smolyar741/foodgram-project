@@ -2,7 +2,10 @@
 
 {% load templates_filters %}
     <div class="card" data-id="{{recipe.id}}">
-          <a href="{% url 'recipe_view' recipe.author.username recipe.id %}" class="link" target="_blank"><img src="{{ recipe.image.url }}" alt="Какой-то текст" class="card__image"></a>
+        {% load thumbnail %}
+        {% thumbnail recipe.image "1920x1080" crop="center" upscale=True as im %}
+        <a href='{% url 'recipe_view' recipe.author.username recipe.id%}' class="link" target="_blank"><img src="{{ im.url }}" alt="The author of the recipe did not add a photo" class="card__image"></a>
+        {% endthumbnail %}
           <div class="card__body">
               <a class="card__title link" href="" target="_blank">{{ recipe.title }}</a>
               {% if recipe.tags %}

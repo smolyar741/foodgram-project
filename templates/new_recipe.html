@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% load static %}
 {% block title%} Добавить рецепт {% endblock%}
     {% load static %}
     {% block new_recipe %} <li class="nav__item nav__item_active"> {% endblock %}
@@ -9,6 +8,7 @@
         <link rel="stylesheet" href={% static 'pages/form.css' %}>
         {% endblock %}
 {% load user_filters %}
+{% load templates_filters %}
 {% block content %}
 <div class="form-container">
     <form class="form" method="post" enctype="multipart/form-data">
@@ -28,19 +28,20 @@
             <p class="form__label">Теги</p>
             <div class="form__field-group">
                 <div class="tags">
-                    {% for tag_choice, tag_value in form.tags.field.choices %}
+                      
                         <div class="tags__item">
-                            <input
-                                type="checkbox"
-                                name="tags"
-                                value="{{ tag_choice.instance.pk }}"
-                                id="id_{{ tag_choice.instance.slug }}"
-                                class="tags__checkbox tags__checkbox_style_{{ tag_choice.instance.color }}"
-                                {% if tag_choice.instance in form.instance.tags.all %} checked {% endif %}>
-                            <label for="id_{{ tag_choice.instance.slug }}" class="tags__label">{{ tag_choice.instance.name }}</label>
+                            {{ form.breakfast|addclass:"tags__checkbox tags__checkbox_style_green" }}
+                            <label for="id_breakfast" class="tags__label">Завтрак</label>
+                         </div>
+                         <div class="tags__item">
+                            {{ form.lunch|addclass:"tags__checkbox tags__checkbox_style_orange" }}
+                            <label for="id_lunch" class="tags__label">Обед</label>
+                         </div>
+                         <div class="tags__item">
+                            {{ form.dinner|addclass:"tags__checkbox tags__checkbox_style_purple" }}
+                            <label for="id_dinner" class="tags__label">Ужин</label>
                         </div>
-                    {% endfor %}
-                </div>
+                    </div>
                 {% if form.errors %}
                     {% for error in form.tags.errors %}
                         <span class="form__error">{{ error|escape }}</span>
@@ -116,11 +117,12 @@
         </form>
     </div>
 
-<script src="{% static 'js/config/config.js' %}"></script>
 
+</main>
+<script src="{% static 'js/config/config.js' %}"></script>
 <script src="{% static 'js/components/Header.js' %}"></script>
 <script src="{% static 'js/utils/debouncing.js' %}"></script>
 <script src="{% static 'js/api/Api.js' %}"></script>
-<script src="{% static 'formRecipe.js' %}"></script>
+<script src="{% static 'js/formRecipe.js' %}"></script>
 
 {% endblock %}

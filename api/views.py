@@ -39,14 +39,14 @@ class Purchases(LoginRequiredMixin, View):
     def post(self, request):
         recipe_id = json.loads(request.body)['id']
         recipe = get_object_or_404(Recipe, id=recipe_id)
-        ShoppingList.objects.get_or_create(
+        ShopList.objects.get_or_create(
             user=request.user, recipe=recipe)
         return JsonResponse({'success': True})
 
     def delete(self, request, recipe_id):
         recipe = get_object_or_404(Recipe, id=recipe_id)
         user = get_object_or_404(User, username=request.user.username)
-        obj = get_object_or_404(ShoppingList, user=user, recipe=recipe)
+        obj = get_object_or_404(ShopList, user=user, recipe=recipe)
         obj.delete()
         return JsonResponse({'success': True})
 

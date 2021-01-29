@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import user_passes_test
 from django.core.paginator import Paginator
 from django.db.models import Sum
 from django.http import HttpResponse
@@ -10,6 +11,21 @@ from recipe.models import (FollowUser, Ingredients, Recipe, RecipeIngredient,
 from recipe.utils import get_ingredients
 
 
+@user_passes_test(lambda u: u.is_superuser)
+def add_ingredients(self):
+    import json
+    from django.http import HttpResponse
+
+    with open('ingredients.json', 'r', encoding='utf-8') as fh:
+        data = json.load(fh)
+
+    for i in data:
+        print('You added this new ingredient:', i)
+        ingredient = Ingredients(title=i['title'], dimension=i['dimension'])
+        ingredient.save()
+    return HttpResponse('\n'.join(str(data)))
+
+
 def index(request):
     tags_slug = request.GET.getlist('filters')
     recipe_list = Recipe.objects.all()
@@ -18,12 +34,11 @@ def index(request):
         recipe_list = recipe_list.filter(
             tags__slug__in=tags_slug).distinct().all()
 
-    paginator = Paginator(recipe_list, 6)
+    paginator = Paginator(recipe_list, 8)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
 
-    return render(request, 'index.html',
-                  {'page': page, 'paginator': paginator, })
+    return render(request, 'index.html', {'page': page, 'paginator': paginator, })
 
 
 def profile(request, username):
@@ -85,35 +100,32 @@ def new_recipe(request):
 
 def recipe_edit(request, recipe_id):
     recipe = get_object_or_404(Recipe, id=recipe_id)
-    form = RecipeForm(
-        request.POST or None,
-        files=request.FILES or None,
-        instance=recipe)
 
     if request.user != recipe.author:
         return redirect('index')
 
-    if request.method == 'POST':
+    if request.method == "POST":
+        form = RecipeForm(request.POST or None,
+                          files=request.FILES or None, instance=recipe)
         ingredients = get_ingredients(request)
-
         if form.is_valid():
             RecipeIngredient.objects.filter(recipe=recipe).delete()
             recipe = form.save(commit=False)
-            recipe.author = request.user()
+            recipe.author = request.user
             recipe.save()
-
             for item in ingredients:
                 RecipeIngredient.objects.create(
                     units=ingredients[item],
-                    ingredient=Ingredients.objects.get(
-                        title=item),
+                    ingredient=Ingredients.objects.get(name=f'{item}'),
                     recipe=recipe)
-
-            form.save_m2m()  # вызывается для сохранения данных, связынных через многи ко многим
+            form.save_m2m()
             return redirect('index')
-            
-    return render(request, "edit_recipe.html",
-                  {'form': form, 'recipe': recipe})
+
+    form = RecipeForm(request.POST or None,
+                      files=request.FILES or None, instance=recipe)
+
+    return render(request, 'recipe_edit.html',
+                  {'form': form, 'recipe': recipe, })
 
 
 def recipe_delete(request, recipe_id):
