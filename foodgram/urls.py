@@ -27,13 +27,12 @@ urlpatterns = [
     path("auth/", include("users.urls")),
     path("auth/", include("django.contrib.auth.urls")),
     path("api/", include('api.urls')),
+    path("", include("recipe.urls")), #порядок важен!)
 ]
 
 urlpatterns += [
         path('about-author/', views.flatpage, {'url': '/about-author/'}, name='about-author'),
         path('about-spec/', views.flatpage, {'url': '/about-spec/'}, name='about-spec'),
-
-        path("", include("recipe.urls")), #порядок важен!)
 ]
 
 
