@@ -31,17 +31,14 @@ def index(request):
         'author').order_by('-pub_date').all()
     recipe_list, food_time = food_time_filter(request, recipe)
 
-    shoping_list_count = ShopList.objects.filter(user=request.user).count()
-
-    paginator = Paginator(recipe_list, 8)
+    paginator = Paginator(recipe_list, 3)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     return render(
         request, 'index.html', {
             'page': page,
             'paginator': paginator,
-            'food_time': food_time,
-            'shoping_list_count': shoping_list_count, 
+            'food_time': food_time
         }
     )
 
