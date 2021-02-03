@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import user_passes_test, login_required
 from .models import Ingredients, Recipe, FollowRecipe, \
     FollowUser, RecipeIngredient, User, ShopList
 
-from .utils import food_time_filter, get_ingredients
+from .utils import food_time_filter, IngredientsValid
 
 from django.http import JsonResponse, HttpResponse
 from django.db.models import Sum
@@ -31,7 +31,7 @@ def index(request):
         'author').order_by('-pub_date').all()
     recipe_list, food_time = food_time_filter(request, recipe)
 
-    paginator = Paginator(recipe_list, 3)
+    paginator = Paginator(recipe_list, 6)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     return render(
@@ -75,7 +75,7 @@ def new_recipe(request):
     user = User.objects.get(username=request.user)
 
     if request.method == 'POST':
-        ingr = get_ingredients(request)
+        ingr = IngredientsValid(request)
         form = RecipeForm(request.POST or None, files=request.FILES or None)
         if not ingr:
             form.add_error(None, 'Добавьте ингредиенты')
@@ -84,8 +84,9 @@ def new_recipe(request):
             recipe = form.save(commit=False)
             recipe.author = user
             recipe.save()
-            for ingr_name, amount in ingr.items():
-                ingr_obj = get_object_or_404(Ingredients, title=ingr_name)
+            for ingr_name, amount in ingr.items:
+                ingr_obj = get_object_or_404(Ingredients,
+                    title=ingr_name)
                 ingr_recipe = RecipeIngredient(
                     ingredient=ingr_obj,
                     recipe=recipe,
@@ -196,7 +197,7 @@ def shopping_list(request):
 
 @login_required
 def download_card(request):
-    recipes = Recipe.objects.filter(recipe_shoping_list__user=request.user)
+    recipes = Recipe.objects.filter(recipe_shop_list__user=request.user)
     ingredients = recipes.values(
         'ingredients__title', 'ingredients__dimension'
     ).annotate(

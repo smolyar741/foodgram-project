@@ -1,17 +1,20 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+{% block title%} Список покупок {% endblock%}
 {% load static %}
+{% csrf_token %}
 {% block static %}
-    <link rel="stylesheet" href="{% static "/pages/index.css" %}">
+    <link rel="stylesheet" href={% static 'pages/shopList.css' %}>
 {% endblock %}
-{% block title %} {{ flatpage.title }} {% endblock %}
-{% block nav %}
-    {% include "nav.html"%}
-{% endblock %}
-{% block content %}
+{% load user_filters %}
+{% load templates_filters %}
 
-<div class="main__header">
-    <h1 class="main__title">{{ flatpage.title }}</h1>
- 
-</div>
-<p class="custom-text-block">{{ flatpage.content }}</p>
+{% block content %}
+{% include 'nav.html' with purchases=True%}
+
+<main class="main container">
+    <div class="main__header">
+        <h1 class="main__title">{{ flatpage.title }}</h1>
+    </div>
+    <p class="custom-text-block">{{ flatpage.content }}</p>
+</main>
 {% endblock %} 

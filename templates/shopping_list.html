@@ -39,8 +39,11 @@
         {% endfor %}
 
         </ul>
+        {% if shopping_list.exists %}
         <a href="{% url 'download_card' %}"><button class="button button_style_blue">Скачать список</button></a>
-
+        {% else %}
+        <h2>Список покупок пустой. Добавьте рецепты в корзину, прежде чем скачать список всех ингредиетнов. </h2>
+        {% endif %}
 
     </div>
 </main>
